@@ -1,51 +1,55 @@
 (() => {
-  const root = document.documentElement;
-  const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const nativeTransition = 'onpageswap' in window && 'onpagereveal' in window;
-  const key = 'astrodrews-meet-andrew';
-  let departing = false;
-  let incoming = false;
-  try {
-    const pending = JSON.parse(sessionStorage.getItem(key) || 'null');
-    sessionStorage.removeItem(key);
-    incoming = location.pathname === '/about-me/' && pending && Date.now() - pending.time < 15000;
-  } catch (_) { /* Navigation still works when storage is unavailable. */ }
-
-  if (incoming && !reducedMotion()) {
-    root.classList.add(nativeTransition ? 'slide-to-about' : 'slide-about-enter');
+  let busy = false;
+  let frame;
+  let animations = [];
+  let timer;
+  let previousOverflow = '';
+  function reset() {
+    clearTimeout(timer);
+    animations.forEach(animation => animation.cancel());
+    animations = [];
+    frame?.remove();
+    frame = undefined;
+    if (busy) document.documentElement.style.overflow = previousOverflow;
+    busy = false;
+    document.querySelector('.hero-copy .text-link')?.removeAttribute('aria-busy');
   }
-  const reset = () => {
-    departing = false;
-    root.classList.remove('slide-to-about', 'slide-about-enter', 'slide-about-exit');
-  };
-  document.addEventListener('animationend', event => {
-    if (event.animationName === 'about-fallback-in') root.classList.remove('slide-about-enter');
-  });
   addEventListener('pageshow', event => { if (event.persisted) reset(); });
-  addEventListener('pagereveal', event => {
-    if (!event.viewTransition) return;
-    if (!incoming || reducedMotion()) {
-      event.viewTransition.skipTransition();
-      return;
-    }
-    root.classList.add('slide-to-about');
-    event.viewTransition.finished.then(reset, reset);
-    incoming = false;
-  });
-  addEventListener('pageswap', event => {
-    if (!event.viewTransition) return;
-    if (!departing || reducedMotion()) event.viewTransition.skipTransition();
-    else root.classList.add('slide-to-about');
-  });
   document.addEventListener('click', event => {
     const link = event.target.closest?.('.hero-copy .text-link[href="/about-me/"]');
-    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || reducedMotion()) return;
-    if (departing) { event.preventDefault(); return; }
-    departing = true;
-    try { sessionStorage.setItem(key, JSON.stringify({time: Date.now()})); } catch (_) {}
-    if (nativeTransition) return; // Keep real navigation, history, and browser loading behavior.
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     event.preventDefault();
-    root.classList.add('slide-about-exit');
-    setTimeout(() => location.assign(link.href), 220);
+    if (busy) return;
+    busy = true;
+    link.setAttribute('aria-busy', 'true');
+    const destination = link.href;
+    previousOverflow = document.documentElement.style.overflow;
+    const navigate = () => location.assign(destination);
+    // Load the real destination before moving either screen. This avoids relying
+    // on cross-document view-transition support in embedded browsers.
+    frame = document.createElement('iframe');
+    frame.className = 'about-slide-frame';
+    frame.title = 'About Andrew preview';
+    frame.tabIndex = -1;
+    frame.setAttribute('aria-hidden', 'true');
+    frame.inert = true;
+    frame.addEventListener('load', async () => {
+      clearTimeout(timer);
+      try {
+        if (!frame.contentDocument?.querySelector('.about-prose')) { navigate(); return; }
+        document.documentElement.style.overflow = 'hidden';
+        const options = {duration: 800, easing: 'cubic-bezier(.65,0,.25,1)', fill: 'forwards'};
+        animations = [
+          document.body.animate([{transform:'translateX(0)'},{transform:'translateX(-100vw)'}], options),
+          frame.animate([{transform:'translateX(100vw)'},{transform:'translateX(0)'}], options)
+        ];
+        await Promise.all(animations.map(animation => animation.finished));
+        navigate();
+      } catch (_) { navigate(); }
+    }, {once:true});
+    frame.src = destination;
+    // A sibling of body stays independent of the outgoing body's transform.
+    document.documentElement.append(frame);
+    timer = setTimeout(navigate, 8000);
   });
 })();
