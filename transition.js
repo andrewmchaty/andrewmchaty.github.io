@@ -39,9 +39,13 @@
       try {
         if (!frame.contentDocument?.querySelector('#main')) { navigate(); return; }
         document.documentElement.style.overflow = 'hidden';
+        // Preserve the incoming header's layout space, but keep the current
+        // navigation visible and stationary above the moving content.
+        const incomingHeader = frame.contentDocument.querySelector('body > header');
+        if (incomingHeader) incomingHeader.style.visibility = 'hidden';
         const options = {duration: slide ? 650 : 420, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards'};
         animations = [
-          document.body.animate(slide ? [{transform:'translateX(0)'},{transform:'translateX(-100vw)'}] : [{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-24px)'}], options),
+          ...Array.from(document.querySelectorAll('body > main, body > footer')).map(content => content.animate(slide ? [{transform:'translateX(0)'},{transform:'translateX(-100vw)'}] : [{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-24px)'}], options)),
           frame.animate(slide ? [{opacity:1,transform:'translateX(100vw)'},{opacity:1,transform:'translateX(0)'}] : [{opacity:0,transform:'translateX(40px)'},{opacity:1,transform:'translateX(0)'}], options)
         ];
         await Promise.all(animations.map(animation => animation.finished));
@@ -49,7 +53,7 @@
       } catch (_) { navigate(); }
     }, {once:true});
     frame.src = destination.href;
-    // Keep the incoming screen independent of the outgoing body's transform.
+    // Keep the incoming screen independent of the outgoing content's transform.
     document.documentElement.append(frame);
     timer = setTimeout(navigate, 8000);
   });

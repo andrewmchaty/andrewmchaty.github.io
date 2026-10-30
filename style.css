@@ -11,7 +11,7 @@
 a{transition:color .2s ease}nav a{position:relative;padding:12px 0}nav a::after{content:'';position:absolute;bottom:4px;left:0;right:0;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease)}nav a[aria-current]::after{transform:scaleX(1)}
 @media(hover:hover){.icon-link:hover>.ui-arrow,.icon-link:hover>span>.ui-arrow{transform:translateX(3px)}.card:hover{transform:translateY(-4px);border-color:#d5bf9466}.card:hover>img{filter:brightness(1.08)}nav a:hover::after{transform:scaleX(1)}.button:hover{box-shadow:0 5px 20px #0003}}
 .button:active{transform:translateY(0) scale(.98)}
-.page-transition-frame{position:fixed;inset:0;width:100vw;height:100dvh;border:0;margin:0;background:var(--bg);z-index:2147483647;opacity:0;transform:translateX(40px);pointer-events:none;color-scheme:dark}
+.page-transition-frame{position:fixed;inset:0;width:100vw;height:100dvh;border:0;margin:0;background:var(--bg);z-index:2147483646;opacity:0;transform:translateX(40px);pointer-events:none;color-scheme:dark}
 @media(max-width:760px){
  nav{display:flex;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(-10px);transition:opacity .22s ease,transform .3s var(--ease),visibility .3s;gap:0;padding:12px 6% 20px;box-shadow:0 18px 30px #0005}
  nav.open{visibility:visible;opacity:1;pointer-events:auto;transform:translateY(0)}nav a{min-height:48px;display:flex;align-items:center;border-bottom:1px solid var(--line);font-size:15px}nav a::after{display:none}nav a:last-child{border:0}
@@ -19,3 +19,6 @@ a{transition:color .2s ease}nav a{position:relative;padding:12px 0}nav a::after{
 }
 @media(max-width:380px){.hero-copy .text-link{margin:12px 0 0;display:flex;width:max-content}.hero{height:690px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}.resume-viewer{scroll-behavior:auto}}
+
+/* Navigation remains stationary above the page transition layer. */
+body>header{z-index:2147483647}
