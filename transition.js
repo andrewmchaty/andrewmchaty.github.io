@@ -26,11 +26,15 @@
     link.setAttribute('aria-busy', 'true');
     previousOverflow = document.documentElement.style.overflow;
     const slide = link.matches('.hero-copy .text-link');
+    // Keep subsequent pages on the same release, including previously cached pages.
+    destination.searchParams.set('update', '5');
     const navigate = () => location.assign(destination.href);
     document.dispatchEvent(new Event('site:navigate'));
     frame = document.createElement('iframe');
     frame.className = 'page-transition-frame';
     frame.title = 'Next page';
+    const header = document.querySelector('body > header');
+    frame.style.clipPath = `inset(${header?.getBoundingClientRect().bottom || 0}px 0 0)`;
     frame.tabIndex = -1;
     frame.setAttribute('aria-hidden', 'true');
     frame.inert = true;

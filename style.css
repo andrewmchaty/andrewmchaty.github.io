@@ -21,4 +21,4 @@ a{transition:color .2s ease}nav a{position:relative;padding:12px 0}nav a::after{
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}.resume-viewer{scroll-behavior:auto}}
 
 /* Navigation remains stationary above the page transition layer. */
-body>header{z-index:2147483647}
+body>header{z-index:2147483647;background:var(--bg)}
