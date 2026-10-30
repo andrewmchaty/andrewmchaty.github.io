@@ -1,9 +1,8 @@
 (() => {
-  let busy = false;
-  let frame;
+  let busy = false, frame, timer, activeLink;
   let animations = [];
-  let timer;
   let previousOverflow = '';
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   function reset() {
     clearTimeout(timer);
     animations.forEach(animation => animation.cancel());
@@ -12,43 +11,45 @@
     frame = undefined;
     if (busy) document.documentElement.style.overflow = previousOverflow;
     busy = false;
-    document.querySelector('.hero-copy .text-link')?.removeAttribute('aria-busy');
+    activeLink?.removeAttribute('aria-busy');
   }
   addEventListener('pageshow', event => { if (event.persisted) reset(); });
   document.addEventListener('click', event => {
-    const link = event.target.closest?.('.hero-copy .text-link[href="/about-me/"]');
-    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const link = event.target.closest?.('a[href]');
+    if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || reduced() || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
+    const destination = new URL(link.href, location.href);
+    if (destination.origin !== location.origin || !destination.pathname.endsWith('/') || destination.hash || destination.pathname === location.pathname) return;
     event.preventDefault();
     if (busy) return;
     busy = true;
+    activeLink = link;
     link.setAttribute('aria-busy', 'true');
-    const destination = link.href;
     previousOverflow = document.documentElement.style.overflow;
-    const navigate = () => location.assign(destination);
-    // Load the real destination before moving either screen. This avoids relying
-    // on cross-document view-transition support in embedded browsers.
+    const slide = link.matches('.hero-copy .text-link');
+    const navigate = () => location.assign(destination.href);
+    document.dispatchEvent(new Event('site:navigate'));
     frame = document.createElement('iframe');
-    frame.className = 'about-slide-frame';
-    frame.title = 'About Andrew preview';
+    frame.className = 'page-transition-frame';
+    frame.title = 'Next page';
     frame.tabIndex = -1;
     frame.setAttribute('aria-hidden', 'true');
     frame.inert = true;
     frame.addEventListener('load', async () => {
       clearTimeout(timer);
       try {
-        if (!frame.contentDocument?.querySelector('.about-prose')) { navigate(); return; }
+        if (!frame.contentDocument?.querySelector('#main')) { navigate(); return; }
         document.documentElement.style.overflow = 'hidden';
-        const options = {duration: 800, easing: 'cubic-bezier(.65,0,.25,1)', fill: 'forwards'};
+        const options = {duration: slide ? 650 : 420, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards'};
         animations = [
-          document.body.animate([{transform:'translateX(0)'},{transform:'translateX(-100vw)'}], options),
-          frame.animate([{transform:'translateX(100vw)'},{transform:'translateX(0)'}], options)
+          document.body.animate(slide ? [{transform:'translateX(0)'},{transform:'translateX(-100vw)'}] : [{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-24px)'}], options),
+          frame.animate(slide ? [{opacity:1,transform:'translateX(100vw)'},{opacity:1,transform:'translateX(0)'}] : [{opacity:0,transform:'translateX(40px)'},{opacity:1,transform:'translateX(0)'}], options)
         ];
         await Promise.all(animations.map(animation => animation.finished));
         navigate();
       } catch (_) { navigate(); }
     }, {once:true});
-    frame.src = destination;
-    // A sibling of body stays independent of the outgoing body's transform.
+    frame.src = destination.href;
+    // Keep the incoming screen independent of the outgoing body's transform.
     document.documentElement.append(frame);
     timer = setTimeout(navigate, 8000);
   });
