@@ -1,0 +1,10 @@
+/* Reading pages use the homepage paper palette. */
+body:has(main .prose)>main{background:#f7f6f2;color:#17252c;--ink:#17252c;--muted:#4c5e65;--line:#17252c25;--accent:#286764}
+body:has(main .prose)>main .prose{color:#374b54}
+body:has(main .prose)>main .eyebrow,body:has(main .prose)>main .page-head>p:not(.eyebrow){color:#286764}
+body:has(main .prose)>main a:hover{color:#194d49}
+body:has(main .prose)>main .resume-viewer{background:#e8e9e5;border-color:#17252c25}
+body:has(main .prose)>main .resume-zoom{background:#fff;color:#286764;border-color:#28676455}
+body:has(main .prose)>main .resume-transcript{color:#374b54}
+body:has(main .prose)>main input,body:has(main .prose)>main textarea{background:#fff;color:#17252c;border-color:#9aa8ac}
+body:has(main .prose)>main :focus-visible{outline-color:#286764}
