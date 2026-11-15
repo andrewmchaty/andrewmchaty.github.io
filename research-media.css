@@ -1,0 +1,1 @@
+.research-item{min-width:0}.research-item>.card{height:auto}.research-item:has(.card[hidden]){display:none}.research-image-credit{font-size:11px;line-height:1.6;color:var(--muted);padding:12px 0 20px}.research-image-credit a{text-decoration:underline;text-underline-offset:3px}.research-item .card>img{object-fit:contain;background:#05090e}
