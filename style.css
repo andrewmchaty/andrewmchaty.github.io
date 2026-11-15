@@ -31,3 +31,16 @@ nav a,.menu{font-family:var(--display-font);font-weight:400;letter-spacing:.01em
 nav a{font-size:16px}
 .card h3{font-family:var(--display-font);font-size:22px;line-height:1.3;font-weight:400;letter-spacing:-.02em}
 @media(max-width:760px){nav a{font-size:19px}.menu{font-size:16px}.card h3{font-size:20px}}
+
+/* Shared paper background across every section; navigation and footer retain navy. */
+body{background:#f7f6f2}
+body>main{background:#f7f6f2;color:#17252c;color-scheme:light;--ink:#17252c;--muted:#4c5e65;--line:#17252c25;--accent:#286764}
+main .prose{color:#374b54}
+main a:hover{color:#194d49}
+main input,main textarea{background:#fff;color:#17252c;border-color:#9aa8ac}
+main .resume-viewer{background:#e8e9e5;border-color:#17252c25}
+main .resume-zoom{background:#fff;color:#286764;border-color:#28676455}
+main .resume-page figcaption{color:#4c5e65}
+main .resume-transcript{color:#374b54}
+main .button{background:#286764;color:#fff;border-color:#286764}
+main .button:hover{background:#194d49;color:#fff}
